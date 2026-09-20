@@ -19,17 +19,20 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    # ÇÖZÜM: Gradle Wrapper'ı dosyalar oluşmadan önce kuruyoruz
-    - name: Setup Gradle Wrapper
-      run: gradle wrapper --gradle-version 8.0
-
-    - name: Generate Android Project
+    - name: Generate Android Project and Wrapper
       run: |
+        # 1. ÇÖZÜM: Önce boş bir settings.gradle oluşturarak Gradle'ı kandırıyoruz
+        touch settings.gradle
+        
+        # 2. Şimdi hata vermeden 8.0 sürümünü kuracak
+        gradle wrapper --gradle-version 8.0
+
+        # 3. Gerekli klasörleri oluşturuyoruz
         mkdir -p app/src/main/java/com/example/notepad
         mkdir -p app/src/main/res/layout
         mkdir -p app/src/main/res/values
 
-        # root settings.gradle
+        # 4. Gerçek settings.gradle içeriğini yazıyoruz (Boş dosyanın üzerine yazılır)
         cat << 'EOF' > settings.gradle
         pluginManagement {
             repositories {
