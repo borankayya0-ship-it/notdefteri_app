@@ -21,18 +21,19 @@ jobs:
 
     - name: Generate Android Project and Wrapper
       run: |
-        # 1. ÇÖZÜM: Önce boş bir settings.gradle oluşturarak Gradle'ı kandırıyoruz
         touch settings.gradle
-        
-        # 2. Şimdi hata vermeden 8.0 sürümünü kuracak
         gradle wrapper --gradle-version 8.0
 
-        # 3. Gerekli klasörleri oluşturuyoruz
         mkdir -p app/src/main/java/com/example/notepad
         mkdir -p app/src/main/res/layout
         mkdir -p app/src/main/res/values
 
-        # 4. Gerçek settings.gradle içeriğini yazıyoruz (Boş dosyanın üzerine yazılır)
+        # ÇÖZÜM: AndroidX desteğini açan gradle.properties dosyasını oluşturuyoruz
+        cat << 'EOF' > gradle.properties
+        android.useAndroidX=true
+        android.enableJetifier=true
+        EOF
+
         cat << 'EOF' > settings.gradle
         pluginManagement {
             repositories {
@@ -52,14 +53,12 @@ jobs:
         include ':app'
         EOF
 
-        # root build.gradle
         cat << 'EOF' > build.gradle
         plugins {
             id 'com.android.application' version '8.1.1' apply false
         }
         EOF
 
-        # app/build.gradle
         cat << 'EOF' > app/build.gradle
         plugins {
             id 'com.android.application'
@@ -94,7 +93,6 @@ jobs:
         }
         EOF
 
-        # AndroidManifest.xml
         cat << 'EOF' > app/src/main/AndroidManifest.xml
         <?xml version="1.0" encoding="utf-8"?>
         <manifest xmlns:android="http://schemas.android.com/apk/res/android">
@@ -115,7 +113,6 @@ jobs:
         </manifest>
         EOF
 
-        # Layout XML
         cat << 'EOF' > app/src/main/res/layout/activity_main.xml
         <?xml version="1.0" encoding="utf-8"?>
         <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -142,7 +139,6 @@ jobs:
         </LinearLayout>
         EOF
 
-        # MainActivity.java
         cat << 'EOF' > app/src/main/java/com/example/notepad/MainActivity.java
         package com.example.notepad;
 
@@ -193,15 +189,12 @@ jobs:
         }
         EOF
 
-    # Grant execute permission for gradlew
     - name: Make gradlew executable
       run: chmod +x gradlew
 
-    # Build APK
     - name: Build Debug APK
       run: ./gradlew assembleDebug
 
-    # Upload APK Artifact
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
