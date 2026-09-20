@@ -84,7 +84,6 @@ jobs:
         dependencies {
             implementation 'androidx.appcompat:appcompat:1.6.1'
             implementation 'com.google.android.material:material:1.9.0'
-            // HTTP istekleri ve JSON işlemleri için profesyonel kütüphaneler
             implementation 'com.squareup.okhttp3:okhttp:4.11.0'
             implementation 'org.json:json:20210307'
         }
@@ -130,7 +129,15 @@ jobs:
         </manifest>
         EOF
 
-        # Erişilebilirlik Servisi Konfigürasyonu
+        # ÇÖZÜM: Metinleri res/values/strings.xml içerisine alıyoruz
+        cat << 'EOF' > app/src/main/res/values/strings.xml
+        <resources>
+            <string name="app_name">Auto AI Agent</string>
+            <string name="accessibility_service_description">Yapay Zeka Otonom Ajan Servisi. Ekranı okur ve otonom işlemler yapar.</string>
+        </resources>
+        EOF
+
+        # ÇÖZÜM: XML dosyasında metin yerine string kaynağına referans veriyoruz
         cat << 'EOF' > app/src/main/res/xml/accessibility_service_config.xml
         <?xml version="1.0" encoding="utf-8"?>
         <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
@@ -139,7 +146,7 @@ jobs:
             android:accessibilityFlags="flagDefault|flagRetrieveInteractiveWindows|flagIncludeNotImportantViews"
             android:canRetrieveWindowContent="true"
             android:canPerformGestures="true"
-            android:description="Yapay Zeka Otonom Ajan Servisi. Ekranı okur ve otonom işlemler yapar." />
+            android:description="@string/accessibility_service_description" />
         EOF
 
         # Layout XML (Profesyonel Arayüz)
@@ -255,7 +262,6 @@ jobs:
                 etModelName = findViewById(R.id.etModelName);
                 etTask = findViewById(R.id.etTask);
 
-                // Kayıtlı ayarları yükle
                 etApiUrl.setText(prefs.getString("api_url", ""));
                 etApiKey.setText(prefs.getString("api_key", ""));
                 etModelName.setText(prefs.getString("model_name", ""));
@@ -278,7 +284,6 @@ jobs:
                     }
                     prefs.edit().putString("current_task", task).putBoolean("is_running", true).apply();
                     
-                    // Erişilebilirlik izni kontrolü ve yönlendirme
                     Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
                     startActivity(intent);
                     Toast.makeText(this, "Lütfen listeden 'Auto AI Agent' servisini aktif edin.", Toast.LENGTH_LONG).show();
@@ -287,7 +292,7 @@ jobs:
         }
         EOF
 
-        # AgentAccessibilityService.java (Ajanın Beyni - Ekranı Okuyan ve Tıklayan Yer)
+        # AgentAccessibilityService.java
         cat << 'EOF' > app/src/main/java/com/agent/auto/AgentAccessibilityService.java
         package com.agent.auto;
 
@@ -348,7 +353,6 @@ jobs:
 
                 isProcessing = true;
                 
-                // 1. Ekranı Yapay Zeka için Metne Çevir (Node Parsing)
                 StringBuilder screenState = new StringBuilder();
                 parseScreen(rootNode, screenState);
                 
@@ -357,10 +361,6 @@ jobs:
                 String apiKey = prefs.getString("api_key", "");
                 String model = prefs.getString("model_name", "");
 
-                Log.d(TAG, "Görev: " + task);
-                Log.d(TAG, "Ekran Durumu: " + screenState.toString());
-
-                // 2. Yapay Zekaya Gönder ve Karar Al
                 askAIToDecide(apiUrl, apiKey, model, task, screenState.toString(), rootNode);
             }
 
@@ -376,7 +376,6 @@ jobs:
 
             private void askAIToDecide(String url, String key, String model, String task, String screenContext, AccessibilityNodeInfo rootNode) {
                 try {
-                    // Yapay zekaya verilecek Prompt sistemi
                     JSONObject systemMessage = new JSONObject();
                     systemMessage.put("role", "system");
                     systemMessage.put("content", "Sen otonom bir Android ajanısın. Görevin: " + task + ". Sana ekrandaki metinleri gönderiyorum: " + screenContext + ". Cevabını sadece tıklamam gereken metni veya açıklamayı (Text veya Desc) yazarak ver. Başka hiçbir şey yazma.");
@@ -399,7 +398,6 @@ jobs:
                         @Override
                         public void onFailure(Call call, IOException e) {
                             isProcessing = false;
-                            Log.e(TAG, "API Hatası: " + e.getMessage());
                         }
 
                         @Override
@@ -411,16 +409,12 @@ jobs:
                                     String aiTargetText = jsonObject.getJSONArray("choices")
                                             .getJSONObject(0).getJSONObject("message").getString("content").trim();
                                     
-                                    Log.d(TAG, "Yapay Zeka Kararı (Tıklanacak): " + aiTargetText);
-                                    
-                                    // 3. Kararı Uygula (Otonom Tıklama)
                                     performClickOnText(rootNode, aiTargetText);
                                     
                                 } catch (Exception e) {
                                     e.printStackTrace();
                                 }
                             }
-                            // İşlem bittikten sonra 3 saniye bekle ve döngüye devam et
                             new Handler(Looper.getMainLooper()).postDelayed(() -> isProcessing = false, 3000);
                         }
                     });
