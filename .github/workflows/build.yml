@@ -72,8 +72,8 @@ jobs:
                 applicationId "com.agent.auto"
                 minSdk 24
                 targetSdk 33
-                versionCode 2
-                versionName "2.0"
+                versionCode 3
+                versionName "3.0"
             }
             compileOptions {
                 sourceCompatibility JavaVersion.VERSION_17
@@ -89,7 +89,6 @@ jobs:
         }
         EOF
 
-        # Uygulama İzinleri
         cat << 'EOF' > app/src/main/AndroidManifest.xml
         <?xml version="1.0" encoding="utf-8"?>
         <manifest xmlns:android="http://schemas.android.com/apk/res/android">
@@ -129,7 +128,6 @@ jobs:
         </manifest>
         EOF
 
-        # Resource Metinleri
         cat << 'EOF' > app/src/main/res/values/strings.xml
         <resources>
             <string name="app_name">Auto AI Agent</string>
@@ -137,7 +135,6 @@ jobs:
         </resources>
         EOF
 
-        # Erişilebilirlik Servis Konfigürasyonu
         cat << 'EOF' > app/src/main/res/xml/accessibility_service_config.xml
         <?xml version="1.0" encoding="utf-8"?>
         <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
@@ -149,7 +146,6 @@ jobs:
             android:description="@string/accessibility_service_description" />
         EOF
 
-        # Yeni Gelişmiş Arayüz Layout
         cat << 'EOF' > app/src/main/res/layout/activity_main.xml
         <?xml version="1.0" encoding="utf-8"?>
         <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
@@ -170,7 +166,6 @@ jobs:
                     android:textStyle="bold"
                     android:layout_marginBottom="12dp"/>
 
-                <!-- API Ayarları -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -206,8 +201,7 @@ jobs:
                     android:id="@+id/btnSaveConfig"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="API Ayarlarını Kaydet"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+                    android:text="API Ayarlarını Kaydet" />
 
                 <View
                     android:layout_width="match_parent"
@@ -215,7 +209,6 @@ jobs:
                     android:background="#DDDDDD"
                     android:layout_marginVertical="12dp"/>
 
-                <!-- İzin Adımları -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -244,7 +237,6 @@ jobs:
                     android:background="#DDDDDD"
                     android:layout_marginVertical="12dp"/>
 
-                <!-- Görev Ver ve Çalıştır -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -256,7 +248,7 @@ jobs:
                     android:id="@+id/etTask"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Örn: Zarchiver uygulamasını aç ve Download klasörüne gir..."
+                    android:hint="Örn: Zarchiver'ı aç ve Download'a gir..."
                     android:inputType="textMultiLine"
                     android:minLines="3"
                     android:gravity="top"
@@ -284,7 +276,6 @@ jobs:
         </ScrollView>
         EOF
 
-        # MainActivity.java - Yenilenmiş Mantık
         cat << 'EOF' > app/src/main/java/com/agent/auto/MainActivity.java
         package com.agent.auto;
 
@@ -317,13 +308,11 @@ jobs:
                 etModelName = findViewById(R.id.etModelName);
                 etTask = findViewById(R.id.etTask);
 
-                // Kayıtlı verileri yükle
                 etApiUrl.setText(prefs.getString("api_url", ""));
                 etApiKey.setText(prefs.getString("api_key", ""));
                 etModelName.setText(prefs.getString("model_name", ""));
                 etTask.setText(prefs.getString("current_task", ""));
 
-                // API Ayarlarını Kaydet
                 findViewById(R.id.btnSaveConfig).setOnClickListener(v -> {
                     prefs.edit()
                         .putString("api_url", etApiUrl.getText().toString().trim())
@@ -333,14 +322,12 @@ jobs:
                     Toast.makeText(this, "API Ayarları Kaydedildi!", Toast.LENGTH_SHORT).show();
                 });
 
-                // 1. Erişilebilirlik İzni
                 findViewById(R.id.btnGrantAccessibility).setOnClickListener(v -> {
                     Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
                     startActivity(intent);
                     Toast.makeText(this, "Listeden 'Auto AI Agent' servisini bulup aktif edin.", Toast.LENGTH_LONG).show();
                 });
 
-                // 2. Üstte Gösterim İzni
                 findViewById(R.id.btnGrantOverlay).setOnClickListener(v -> {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                         Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
@@ -349,32 +336,21 @@ jobs:
                     }
                 });
 
-                // 3. Otonom Ajanı Başlat
                 findViewById(R.id.btnStartAgent).setOnClickListener(v -> {
                     String task = etTask.getText().toString().trim();
-                    String apiUrl = etApiUrl.getText().toString().trim();
-                    String apiKey = etApiKey.getText().toString().trim();
-
-                    if (TextUtils.isEmpty(apiUrl) || TextUtils.isEmpty(apiKey)) {
-                        Toast.makeText(this, "Lütfen önce API bilgilerini doldurun ve kaydedin!", Toast.LENGTH_LONG).show();
-                        return;
-                    }
-
                     if (TextUtils.isEmpty(task)) {
                         Toast.makeText(this, "Lütfen ajana bir görev yazın!", Toast.LENGTH_LONG).show();
                         return;
                     }
 
-                    // Görevi kaydet ve çalışıyor bayrağını aç
                     prefs.edit()
                         .putString("current_task", task)
                         .putBoolean("is_running", true)
                         .apply();
 
-                    Toast.makeText(this, "🚀 Otonom Ajan Başlatıldı! Şimdi ana ekrana dönebilirsiniz, ajan görevi icra edecek.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "🚀 Otonom Ajan Başlatıldı! Ana ekrana dönebilirsiniz.", Toast.LENGTH_LONG).show();
                 });
 
-                // Ajanı Durdur
                 findViewById(R.id.btnStopAgent).setOnClickListener(v -> {
                     prefs.edit().putBoolean("is_running", false).apply();
                     Toast.makeText(this, "🛑 Otonom Ajan Durduruldu.", Toast.LENGTH_SHORT).show();
@@ -383,7 +359,6 @@ jobs:
         }
         EOF
 
-        # AgentAccessibilityService.java - Gelişmiş Ajan Servisi
         cat << 'EOF' > app/src/main/java/com/agent/auto/AgentAccessibilityService.java
         package com.agent.auto;
 
@@ -487,4 +462,28 @@ jobs:
                     systemMessage.put("role", "system");
                     systemMessage.put("content", "Sen bir Android Otonom Ajanısın. Ana Görev: " + task + 
                             ". Ekrandaki görünür elemanlar: " + screenContent + 
-                            ". Şimdi neye tıklamam gerektiğini SAD
+                            ". Şimdi neye tıklamam gerektiğini SADECE ekranda tırnak içinde geçen metin olarak yaz. Ekstra hiçbir açıklama yapma.");
+
+                    JSONArray messages = new JSONArray();
+                    messages.put(systemMessage);
+
+                    JSONObject jsonBody = new JSONObject();
+                    jsonBody.put("model", model.isEmpty() ? "gpt-4o" : model);
+                    jsonBody.put("messages", messages);
+
+                    RequestBody body = RequestBody.create(jsonBody.toString(), MediaType.parse("application/json; charset=utf-8"));
+                    
+                    Request.Builder reqBuilder = new Request.Builder().url(url).post(body);
+                    if (!key.isEmpty()) {
+                        reqBuilder.addHeader("Authorization", "Bearer " + key);
+                    }
+
+                    client.newCall(reqBuilder.build()).enqueue(new Callback() {
+                        @Override
+                        public void onFailure(Call call, IOException e) {
+                            resetProcessingDelay(4000);
+                        }
+
+                        @Override
+                        public void onResponse(Call call, Response response) throws IOException {
+                            if (response.isSucc
