@@ -72,8 +72,8 @@ jobs:
                 applicationId "com.agent.auto"
                 minSdk 24
                 targetSdk 33
-                versionCode 1
-                versionName "1.0"
+                versionCode 2
+                versionName "2.0"
             }
             compileOptions {
                 sourceCompatibility JavaVersion.VERSION_17
@@ -89,7 +89,7 @@ jobs:
         }
         EOF
 
-        # Uygulama İzinleri ve Servis Tanımı
+        # Uygulama İzinleri
         cat << 'EOF' > app/src/main/AndroidManifest.xml
         <?xml version="1.0" encoding="utf-8"?>
         <manifest xmlns:android="http://schemas.android.com/apk/res/android">
@@ -113,7 +113,7 @@ jobs:
                     </intent-filter>
                 </activity>
 
-                <!-- Yapay Zeka için Erişilebilirlik Servisi -->
+                <!-- Yapay Zeka Erişilebilirlik Servisi -->
                 <service
                     android:name=".AgentAccessibilityService"
                     android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
@@ -129,15 +129,15 @@ jobs:
         </manifest>
         EOF
 
-        # ÇÖZÜM: Metinleri res/values/strings.xml içerisine alıyoruz
+        # Resource Metinleri
         cat << 'EOF' > app/src/main/res/values/strings.xml
         <resources>
             <string name="app_name">Auto AI Agent</string>
-            <string name="accessibility_service_description">Yapay Zeka Otonom Ajan Servisi. Ekranı okur ve otonom işlemler yapar.</string>
+            <string name="accessibility_service_description">Yapay Zeka Otonom Ajan Servisi. Ekranı okur, düğmelere basar ve komutları çalıştırır.</string>
         </resources>
         EOF
 
-        # ÇÖZÜM: XML dosyasında metin yerine string kaynağına referans veriyoruz
+        # Erişilebilirlik Servis Konfigürasyonu
         cat << 'EOF' > app/src/main/res/xml/accessibility_service_config.xml
         <?xml version="1.0" encoding="utf-8"?>
         <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
@@ -149,7 +149,7 @@ jobs:
             android:description="@string/accessibility_service_description" />
         EOF
 
-        # Layout XML (Profesyonel Arayüz)
+        # Yeni Gelişmiş Arayüz Layout
         cat << 'EOF' > app/src/main/res/layout/activity_main.xml
         <?xml version="1.0" encoding="utf-8"?>
         <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
@@ -165,82 +165,137 @@ jobs:
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="AI Agent Kurulumu"
-                    android:textSize="24sp"
+                    android:text="Otonom AI Ajan Kontrol Paneli"
+                    android:textSize="20sp"
                     android:textStyle="bold"
-                    android:layout_marginBottom="16dp"/>
+                    android:layout_marginBottom="12dp"/>
+
+                <!-- API Ayarları -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1. API Konfigürasyonu"
+                    android:textStyle="bold"
+                    android:textColor="#333333"/>
 
                 <EditText
                     android:id="@+id/etApiUrl"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="API URL (Örn: https://api.openai.com/v1/chat/completions)"
-                    android:inputType="textUri" />
+                    android:inputType="textUri"
+                    android:textSize="14sp"/>
 
                 <EditText
                     android:id="@+id/etApiKey"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="API Key (Bearer Token)"
-                    android:inputType="textPassword" />
+                    android:inputType="textPassword"
+                    android:textSize="14sp"/>
 
                 <EditText
                     android:id="@+id/etModelName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Model Adı (Örn: gpt-4o, qwen-2.5)"
-                    android:inputType="text" />
+                    android:inputType="text"
+                    android:textSize="14sp"/>
 
                 <Button
                     android:id="@+id/btnSaveConfig"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Ayarları Kaydet" />
+                    android:text="API Ayarlarını Kaydet"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
 
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:background="#CCCCCC"
-                    android:layout_marginVertical="16dp"/>
+                    android:background="#DDDDDD"
+                    android:layout_marginVertical="12dp"/>
 
+                <!-- İzin Adımları -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Görev Ver"
-                    android:textSize="18sp"
-                    android:textStyle="bold"/>
+                    android:text="2. Gerekli İzinler"
+                    android:textStyle="bold"
+                    android:textColor="#333333"/>
+
+                <Button
+                    android:id="@+id/btnGrantAccessibility"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Erişilebilirlik İznini Aç"
+                    android:backgroundTint="#FF9800"/>
+
+                <Button
+                    android:id="@+id/btnGrantOverlay"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Üstte Gösterim İznini Aç"
+                    android:backgroundTint="#009688"
+                    android:layout_marginTop="4dp"/>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#DDDDDD"
+                    android:layout_marginVertical="12dp"/>
+
+                <!-- Görev Ver ve Çalıştır -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="3. Görev Emri"
+                    android:textStyle="bold"
+                    android:textColor="#333333"/>
 
                 <EditText
                     android:id="@+id/etTask"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Örn: Zarchiver'ı aç, download'a gir..."
+                    android:hint="Örn: Zarchiver uygulamasını aç ve Download klasörüne gir..."
                     android:inputType="textMultiLine"
                     android:minLines="3"
-                    android:gravity="top"/>
+                    android:gravity="top"
+                    android:layout_marginTop="6dp"/>
 
                 <Button
                     android:id="@+id/btnStartAgent"
                     android:layout_width="match_parent"
+                    android:layout_height="60dp"
+                    android:text="🚀 OTONOM AJANI BAŞLAT"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:backgroundTint="#4CAF50"
+                    android:layout_marginTop="8dp"/>
+
+                <Button
+                    android:id="@+id/btnStopAgent"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Ajanı Başlat ve İzinleri Ver"
-                    android:backgroundTint="#4CAF50"/>
+                    android:text="🛑 AJANI DURDUR"
+                    android:backgroundTint="#F44336"
+                    android:layout_marginTop="4dp"/>
 
             </LinearLayout>
         </ScrollView>
         EOF
 
-        # MainActivity.java
+        # MainActivity.java - Yenilenmiş Mantık
         cat << 'EOF' > app/src/main/java/com/agent/auto/MainActivity.java
         package com.agent.auto;
 
         import android.content.Context;
         import android.content.Intent;
         import android.content.SharedPreferences;
+        import android.net.Uri;
+        import android.os.Build;
         import android.os.Bundle;
         import android.provider.Settings;
         import android.text.TextUtils;
-        import android.widget.Button;
         import android.widget.EditText;
         import android.widget.Toast;
         import androidx.appcompat.app.AppCompatActivity;
@@ -262,37 +317,73 @@ jobs:
                 etModelName = findViewById(R.id.etModelName);
                 etTask = findViewById(R.id.etTask);
 
+                // Kayıtlı verileri yükle
                 etApiUrl.setText(prefs.getString("api_url", ""));
                 etApiKey.setText(prefs.getString("api_key", ""));
                 etModelName.setText(prefs.getString("model_name", ""));
                 etTask.setText(prefs.getString("current_task", ""));
 
+                // API Ayarlarını Kaydet
                 findViewById(R.id.btnSaveConfig).setOnClickListener(v -> {
                     prefs.edit()
-                        .putString("api_url", etApiUrl.getText().toString())
-                        .putString("api_key", etApiKey.getText().toString())
-                        .putString("model_name", etModelName.getText().toString())
+                        .putString("api_url", etApiUrl.getText().toString().trim())
+                        .putString("api_key", etApiKey.getText().toString().trim())
+                        .putString("model_name", etModelName.getText().toString().trim())
                         .apply();
-                    Toast.makeText(this, "Ayarlar Kaydedildi!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "API Ayarları Kaydedildi!", Toast.LENGTH_SHORT).show();
                 });
 
-                findViewById(R.id.btnStartAgent).setOnClickListener(v -> {
-                    String task = etTask.getText().toString();
-                    if(TextUtils.isEmpty(task)){
-                        Toast.makeText(this, "Lütfen bir görev girin!", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    prefs.edit().putString("current_task", task).putBoolean("is_running", true).apply();
-                    
+                // 1. Erişilebilirlik İzni
+                findViewById(R.id.btnGrantAccessibility).setOnClickListener(v -> {
                     Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
                     startActivity(intent);
-                    Toast.makeText(this, "Lütfen listeden 'Auto AI Agent' servisini aktif edin.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "Listeden 'Auto AI Agent' servisini bulup aktif edin.", Toast.LENGTH_LONG).show();
+                });
+
+                // 2. Üstte Gösterim İzni
+                findViewById(R.id.btnGrantOverlay).setOnClickListener(v -> {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                Uri.parse("package:" + getPackageName()));
+                        startActivity(intent);
+                    }
+                });
+
+                // 3. Otonom Ajanı Başlat
+                findViewById(R.id.btnStartAgent).setOnClickListener(v -> {
+                    String task = etTask.getText().toString().trim();
+                    String apiUrl = etApiUrl.getText().toString().trim();
+                    String apiKey = etApiKey.getText().toString().trim();
+
+                    if (TextUtils.isEmpty(apiUrl) || TextUtils.isEmpty(apiKey)) {
+                        Toast.makeText(this, "Lütfen önce API bilgilerini doldurun ve kaydedin!", Toast.LENGTH_LONG).show();
+                        return;
+                    }
+
+                    if (TextUtils.isEmpty(task)) {
+                        Toast.makeText(this, "Lütfen ajana bir görev yazın!", Toast.LENGTH_LONG).show();
+                        return;
+                    }
+
+                    // Görevi kaydet ve çalışıyor bayrağını aç
+                    prefs.edit()
+                        .putString("current_task", task)
+                        .putBoolean("is_running", true)
+                        .apply();
+
+                    Toast.makeText(this, "🚀 Otonom Ajan Başlatıldı! Şimdi ana ekrana dönebilirsiniz, ajan görevi icra edecek.", Toast.LENGTH_LONG).show();
+                });
+
+                // Ajanı Durdur
+                findViewById(R.id.btnStopAgent).setOnClickListener(v -> {
+                    prefs.edit().putBoolean("is_running", false).apply();
+                    Toast.makeText(this, "🛑 Otonom Ajan Durduruldu.", Toast.LENGTH_SHORT).show();
                 });
             }
         }
         EOF
 
-        # AgentAccessibilityService.java
+        # AgentAccessibilityService.java - Gelişmiş Ajan Servisi
         cat << 'EOF' > app/src/main/java/com/agent/auto/AgentAccessibilityService.java
         package com.agent.auto;
 
@@ -322,7 +413,7 @@ jobs:
 
         public class AgentAccessibilityService extends AccessibilityService {
 
-            private static final String TAG = "AutoAgent";
+            private static final String TAG = "AutoAgentService";
             private OkHttpClient client;
             private boolean isProcessing = false;
             private SharedPreferences prefs;
@@ -335,132 +426,65 @@ jobs:
                         .readTimeout(30, TimeUnit.SECONDS)
                         .build();
                 prefs = getSharedPreferences("AgentPrefs", Context.MODE_PRIVATE);
-                Toast.makeText(this, "Ajan Servisi Bağlandı!", Toast.LENGTH_SHORT).show();
+                
+                new Handler(Looper.getMainLooper()).post(() -> 
+                    Toast.makeText(this, "✅ AI Agent Erişilebilirlik Servisi Aktif!", Toast.LENGTH_SHORT).show()
+                );
             }
 
             @Override
             public void onAccessibilityEvent(AccessibilityEvent event) {
-                if (event.getEventType() != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED &&
-                    event.getEventType() != AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
+                if (!prefs.getBoolean("is_running", false)) return;
+
+                int eventType = event.getEventType();
+                if (eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED &&
+                    eventType != AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
                     return;
                 }
 
-                if (!prefs.getBoolean("is_running", false)) return;
                 if (isProcessing) return;
 
                 AccessibilityNodeInfo rootNode = getRootInActiveWindow();
                 if (rootNode == null) return;
 
                 isProcessing = true;
-                
-                StringBuilder screenState = new StringBuilder();
-                parseScreen(rootNode, screenState);
-                
+
+                StringBuilder screenTextBuilder = new StringBuilder();
+                parseScreenTree(rootNode, screenTextBuilder);
+
                 String task = prefs.getString("current_task", "");
                 String apiUrl = prefs.getString("api_url", "");
                 String apiKey = prefs.getString("api_key", "");
-                String model = prefs.getString("model_name", "");
+                String model = prefs.getString("model_name", "gpt-4o");
 
-                askAIToDecide(apiUrl, apiKey, model, task, screenState.toString(), rootNode);
-            }
-
-            private void parseScreen(AccessibilityNodeInfo node, StringBuilder sb) {
-                if (node == null) return;
-                if (node.getText() != null) sb.append("Text: '").append(node.getText()).append("', ");
-                if (node.getContentDescription() != null) sb.append("Desc: '").append(node.getContentDescription()).append("', ");
-                
-                for (int i = 0; i < node.getChildCount(); i++) {
-                    parseScreen(node.getChild(i), sb);
-                }
-            }
-
-            private void askAIToDecide(String url, String key, String model, String task, String screenContext, AccessibilityNodeInfo rootNode) {
-                try {
-                    JSONObject systemMessage = new JSONObject();
-                    systemMessage.put("role", "system");
-                    systemMessage.put("content", "Sen otonom bir Android ajanısın. Görevin: " + task + ". Sana ekrandaki metinleri gönderiyorum: " + screenContext + ". Cevabını sadece tıklamam gereken metni veya açıklamayı (Text veya Desc) yazarak ver. Başka hiçbir şey yazma.");
-
-                    JSONArray messages = new JSONArray();
-                    messages.put(systemMessage);
-
-                    JSONObject jsonBody = new JSONObject();
-                    jsonBody.put("model", model);
-                    jsonBody.put("messages", messages);
-
-                    RequestBody body = RequestBody.create(jsonBody.toString(), MediaType.parse("application/json; charset=utf-8"));
-                    Request request = new Request.Builder()
-                            .url(url)
-                            .addHeader("Authorization", "Bearer " + key)
-                            .post(body)
-                            .build();
-
-                    client.newCall(request).enqueue(new Callback() {
-                        @Override
-                        public void onFailure(Call call, IOException e) {
-                            isProcessing = false;
-                        }
-
-                        @Override
-                        public void onResponse(Call call, Response response) throws IOException {
-                            if(response.isSuccessful() && response.body() != null) {
-                                try {
-                                    String respStr = response.body().string();
-                                    JSONObject jsonObject = new JSONObject(respStr);
-                                    String aiTargetText = jsonObject.getJSONArray("choices")
-                                            .getJSONObject(0).getJSONObject("message").getString("content").trim();
-                                    
-                                    performClickOnText(rootNode, aiTargetText);
-                                    
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                            new Handler(Looper.getMainLooper()).postDelayed(() -> isProcessing = false, 3000);
-                        }
-                    });
-                } catch (Exception e) {
+                if (screenTextBuilder.length() > 0 && !apiUrl.isEmpty()) {
+                    sendToAI(apiUrl, apiKey, model, task, screenTextBuilder.toString(), rootNode);
+                } else {
                     isProcessing = false;
                 }
             }
 
-            private boolean performClickOnText(AccessibilityNodeInfo node, String targetText) {
-                if (node == null) return false;
+            private void parseScreenTree(AccessibilityNodeInfo node, StringBuilder sb) {
+                if (node == null) return;
                 
-                String text = node.getText() != null ? node.getText().toString() : "";
-                String desc = node.getContentDescription() != null ? node.getContentDescription().toString() : "";
+                CharSequence text = node.getText();
+                CharSequence desc = node.getContentDescription();
 
-                if (text.toLowerCase().contains(targetText.toLowerCase()) || desc.toLowerCase().contains(targetText.toLowerCase())) {
-                    if (node.isClickable()) {
-                        node.performAction(AccessibilityNodeInfo.ACTION_CLICK);
-                        return true;
-                    } else if (node.getParent() != null && node.getParent().isClickable()) {
-                        node.getParent().performAction(AccessibilityNodeInfo.ACTION_CLICK);
-                        return true;
-                    }
+                if (text != null && text.length() > 0) {
+                    sb.append("[").append(text.toString().trim()).append("] ");
+                } else if (desc != null && desc.length() > 0) {
+                    sb.append("[").append(desc.toString().trim()).append("] ");
                 }
 
                 for (int i = 0; i < node.getChildCount(); i++) {
-                    if (performClickOnText(node.getChild(i), targetText)) return true;
+                    parseScreenTree(node.getChild(i), sb);
                 }
-                return false;
             }
 
-            @Override
-            public void onInterrupt() {
-                isProcessing = false;
-            }
-        }
-        EOF
-
-    - name: Make gradlew executable
-      run: chmod +x gradlew
-
-    - name: Build Debug APK
-      run: ./gradlew assembleDebug
-
-    - name: Upload APK Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: AutoAgent-APK
-        path: app/build/outputs/apk/debug/app-debug.apk
-        
+            private void sendToAI(String url, String key, String model, String task, String screenContent, AccessibilityNodeInfo rootNode) {
+                try {
+                    JSONObject systemMessage = new JSONObject();
+                    systemMessage.put("role", "system");
+                    systemMessage.put("content", "Sen bir Android Otonom Ajanısın. Ana Görev: " + task + 
+                            ". Ekrandaki görünür elemanlar: " + screenContent + 
+                            ". Şimdi neye tıklamam gerektiğini SAD
